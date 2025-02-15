@@ -1,0 +1,28 @@
+/* Light mode */
+.custom-datagrid .MuiDataGrid-columnHeaders {
+    background-color: #f5f5f5; /* Light gray */
+    color: #000;              /* Black text */
+  }
+  
+  /* Dark mode */
+  .dark .custom-datagrid .MuiDataGrid-columnHeaders {
+    background-color: #1f2937; /* Darker gray for header */
+    color: #ffffff;            /* White text */
+  }
+  
+  /* General cell styling for both modes */
+  .custom-datagrid .MuiDataGrid-cell {
+    background-color: inherit;
+    color: inherit;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  /* Adjust hover effect */
+  .custom-datagrid .MuiDataGrid-row:hover {
+    background-color: rgba(156, 163, 175, 0.2); /* Light gray hover */
+  }
+  
+  .dark .custom-datagrid .MuiDataGrid-row:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Light white hover for dark mode */
+  }
+  

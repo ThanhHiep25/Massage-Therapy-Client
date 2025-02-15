@@ -4,8 +4,11 @@ import { resetPassword, sendResetPassword } from '../../service/apiService';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-const ForgotPassword: React.FC = () => {
-    const [email, setEmail] = useState('');
+const ChangePassword: React.FC = () => {
+    // Lấy email từ localStorage hoặc context
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const userEmail = storedUser?.email || '';
+
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -16,29 +19,26 @@ const ForgotPassword: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    const navigation = useNavigate();
+    const navigate = useNavigate();
 
-    const isValidEmail = (email: string) => {
-        return /\S+@\S+\.\S+/.test(email);
-    };
-    
+    useEffect(() => {
+        if (!userEmail) {
+            setError("Không tìm thấy email. Vui lòng đăng nhập lại.");
+        }
+    }, [userEmail]);
+
     const handleSendOtp = async () => {
-        if (!email) {
-            setError("Vui lòng nhập email.");
+        if (!userEmail) {
+            setError("Không tìm thấy email. Vui lòng đăng nhập lại.");
             return;
         }
-    
-        if (!isValidEmail(email)) {
-            setError("Email không hợp lệ.");
-            return;
-        }
-    
+
         setError(null);
         setSuccess(null);
         setLoading(true);
-    
+
         try {
-            await sendResetPassword(email);
+            await sendResetPassword(userEmail);
             setStep(2);
             setTimer(60);
             setSuccess("OTP đã được gửi tới email của bạn.");
@@ -49,7 +49,6 @@ const ForgotPassword: React.FC = () => {
             setLoading(false);
         }
     };
-    
 
     const handleResetPassword = async () => {
         if (attemptsLeft === 0) {
@@ -61,44 +60,33 @@ const ForgotPassword: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await resetPassword(email, otp, newPassword);
+            const response = await resetPassword(userEmail, otp, newPassword);
             const message = response.message || '';
 
-            // Kiểm tra message để xác định trạng thái
             if (message.includes('OTP hết hạn')) {
                 setError('OTP đã hết hạn. Vui lòng yêu cầu OTP mới.');
             } else if (message.includes('OTP không chính xác')) {
+                setAttemptsLeft((prev) => prev - 1);
                 setError('OTP không chính xác. Vui lòng kiểm tra lại.');
             } else if (message.includes('Đặt lại mật khẩu thành công')) {
                 setSuccess('Đặt lại mật khẩu thành công!');
                 resetForm();
                 setTimeout(() => {
-                    navigation('/login');
+                    navigate('/dashboard');
                 }, 3000);
             } else {
                 setError('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
             }
         } catch (error: any) {
             console.error('Error resetting password:', error);
-            const message = error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.';
-
-            if (message.includes('OTP hết hạn')) {
-                setError('OTP đã hết hạn. Vui lòng yêu cầu OTP mới.');
-            } else if (message.includes('OTP không chính xác')) {
-                setError('OTP không chính xác. Vui lòng kiểm tra lại.');
-            } else {
-                setError(message);
-            }
+            setError(error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
         } finally {
             setLoading(false);
         }
     };
 
-
-
     const resetForm = () => {
         setStep(1);
-        setEmail('');
         setOtp('');
         setNewPassword('');
         setTimer(0);
@@ -110,7 +98,7 @@ const ForgotPassword: React.FC = () => {
             interval = setInterval(() => {
                 setTimer((prev) => prev - 1);
             }, 1000);
-        }else if(timer === 0) {
+        } else if (timer === 0) {
             setOtp('');
         }
         return () => clearInterval(interval);
@@ -131,7 +119,7 @@ const ForgotPassword: React.FC = () => {
             <Card className="w-full max-w-md shadow-lg">
                 <CardContent>
                     <Typography variant="h5" className="mb-4 text-center font-bold">
-                        {step === 1 ? 'Quên mật khẩu' : 'Đặt lại mật khẩu'}
+                        {step === 1 ? 'Xác thực OTP' : 'Đặt lại mật khẩu'}
                     </Typography>
 
                     {error && <Alert severity="error" className="mb-4">{error}</Alert>}
@@ -139,21 +127,15 @@ const ForgotPassword: React.FC = () => {
 
                     {step === 1 && (
                         <>
-                            <TextField
-                                label="Email"
-                                type="email"
-                                fullWidth
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="mb-4"
-                                disabled={loading}
-                            />
+                            <Typography className="mb-4 text-center">
+                                Chúng tôi sẽ gửi OTP đến email: <b>{userEmail}</b>
+                            </Typography>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 fullWidth
                                 onClick={handleSendOtp}
-                                disabled={!email || loading}
+                                disabled={loading}
                             >
                                 {loading ? 'Đang gửi...' : 'Gửi OTP'}
                             </Button>
@@ -175,7 +157,6 @@ const ForgotPassword: React.FC = () => {
                                 <Typography className="text-red-400 text-center pl-4 mb-2 font-medium">
                                     {timer > 0 ? `${formatTime(timer)}` : 'OTP đã hết hạn.'}
                                 </Typography>
-
                             </div>
 
                             <TextField
@@ -197,7 +178,7 @@ const ForgotPassword: React.FC = () => {
                                 }}
                             />
 
-                            <div className=" flex flex-col items-center">
+                            <div className="flex flex-col items-center">
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -223,8 +204,6 @@ const ForgotPassword: React.FC = () => {
                                     </Button>
                                 )}
                             </div>
-
-
                         </>
                     )}
                 </CardContent>
@@ -233,4 +212,4 @@ const ForgotPassword: React.FC = () => {
     );
 };
 
-export default ForgotPassword;
+export default ChangePassword;

@@ -21,17 +21,18 @@ import {
   GridSlotProps,
 } from '@mui/x-data-grid';
 import { useState } from 'react';
+import { Add, Delete, Edit, Save } from '@mui/icons-material';
 
 const initialRows: GridRowsProp = [
-    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 },
-    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 31 },
-    { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 31 },
-    { id: 4, lastName: 'Stark', firstName: 'Arya', age: 11 },
-    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-    { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-    { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+  { id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 },
+  { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 31 },
+  { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 31 },
+  { id: 4, lastName: 'Stark', firstName: 'Arya', age: 11 },
+  { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
+  { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
+  { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
+  { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
+  { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
 ];
 
 declare module '@mui/x-data-grid' {
@@ -67,7 +68,7 @@ function EditToolbar(props: GridSlotProps['toolbar']) {
   );
 }
 
-const DanhSachKH:React.FC = () => {
+const DanhSachKH: React.FC = () => {
   const [rows, setRows] = useState(initialRows);
   const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
@@ -112,7 +113,7 @@ const DanhSachKH:React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Name', width: 180, editable: true },
+    { field: 'lastName', headerName: 'Name', width: 180, editable: true },
     {
       field: 'age',
       headerName: 'Age',
@@ -186,32 +187,47 @@ const DanhSachKH:React.FC = () => {
   ];
 
   return (
-    <Box
-      sx={{
-        height: 500,
-        width: '99%',
-        '& .actions': {
-          color: 'text.secondary',
-        },
-        '& .textPrimary': {
-          color: 'text.primary',
-        },
-      }}
-    >
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        editMode="row"
-        rowModesModel={rowModesModel}
-        onRowModesModelChange={handleRowModesModelChange}
-        onRowEditStop={handleRowEditStop}
-        processRowUpdate={processRowUpdate}
-        slots={{ toolbar: EditToolbar }}
-        slotProps={{
-          toolbar: { setRows, setRowModesModel },
+    <div className="flex flex-col">
+      <div className="text-center p-4">
+        <h2 className="font-bold text-3xl">Danh sách khách hàng</h2>
+      </div>
+      <div className="flex w-full mb-3 mt-4">
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"><Add /> Thêm</button>
+        <button className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded-md"><Delete /> Xóa</button>
+        <button className="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md"><Edit /> Sửa</button>
+        <button className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"><Save /> Lưu</button>
+        <button className="ml-2 bg-red-400 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded-md">Đóng</button>
+      </div>
+      <Box
+        sx={{
+          height: 500,
+          width: '99%',
+          '& .actions': {
+            color: 'text.secondary',
+          },
+          '& .textPrimary': {
+            color: 'text.primary',
+          },
+          marginBottom:"50px",
         }}
-      />
-    </Box>
+      >
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={handleRowModesModelChange}
+          onRowEditStop={handleRowEditStop}
+          processRowUpdate={processRowUpdate}
+          slots={{ toolbar: EditToolbar }}
+          slotProps={{
+            toolbar: { setRows, setRowModesModel },
+          }}
+        />
+      </Box>
+
+    </div>
+
   );
 }
 

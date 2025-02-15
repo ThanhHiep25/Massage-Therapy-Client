@@ -8,9 +8,11 @@ const RegisterForm: React.FC = () => {
     name: "",
     username: "",
     email: "",
+    phone:"",
     password: "",
     address: "",
-    imageUrl: "", // Lưu avatar dưới dạng URL từ Cloudinary
+    imageUrl: "",// Lưu avatar dưới dạng URL từ Cloudinary
+    description:"", 
   });
   const [message, setMessage] = useState<string>("");
   const [otp, setOtp] = useState<string>(""); // OTP state
@@ -209,6 +211,16 @@ const RegisterForm: React.FC = () => {
           </div>
           <div className="mb-4">
             <input
+              name="phone"
+              type="text"
+              placeholder="Số điện thoại"
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
               name="password"
               type="password"
               placeholder="Mật khẩu"
@@ -222,6 +234,16 @@ const RegisterForm: React.FC = () => {
               type="text"
               name="address"
               placeholder="Địa chỉ"
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="text"
+              name="description"
+              placeholder="Mô tả cơ bản"
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required

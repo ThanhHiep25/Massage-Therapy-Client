@@ -89,7 +89,7 @@ const MenuDrawer: React.FC = () => {
                 )}
                 <Collapse in={open.employees} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                        <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemButton sx={{ pl: 4 }} onClick={() => handleNavigation('themNV')}>
                             <Typography>Thêm nhân viên mới</Typography>
                         </ListItemButton>
                         <ListItemButton sx={{ pl: 4 }} onClick={() => handleNavigation('danhsachNV')}>
