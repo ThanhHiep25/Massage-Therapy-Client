@@ -40,7 +40,7 @@ const ForgotPassword: React.FC = () => {
         try {
             await sendResetPassword(email);
             setStep(2);
-            setTimer(60);
+            setTimer(180);
             setSuccess("OTP đã được gửi tới email của bạn.");
         } catch (error: any) {
             console.error("Error sending OTP:", error);

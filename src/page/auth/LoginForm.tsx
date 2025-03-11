@@ -2,6 +2,7 @@ import { useState } from "react";
 import { loginUser } from "../../service/apiService";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hook/AuthContext";
+import GoogleButtonGoogleButton from "../../components/google/GoogleLoginButton";
 
 
 const LoginForm: React.FC = () => {
@@ -77,6 +78,7 @@ const LoginForm: React.FC = () => {
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
+      
         <p className="text-gray-500 text-center mt-4">{message}</p>
         <button
           onClick={() => navigation("/register")}
@@ -84,6 +86,7 @@ const LoginForm: React.FC = () => {
         >
           Register
         </button>
+       <GoogleButtonGoogleButton />
       </div>
     </div>
   );
