@@ -1,15 +1,27 @@
-import { AccountCircleOutlined, LogoutOutlined, NotificationsActiveOutlined, SettingsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, LogoutOutlined, NotificationsActiveOutlined, SettingsOutlined, SpaOutlined } from '@mui/icons-material';
 import { Avatar, Badge, IconButton, styled } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hook/AuthContext';
 import { logout } from '../../service/apiService';
+import { Leaf } from "lucide-react";
 
 const Bar: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+    const [leaves, setLeaves] = useState<number[]>([]);
     const { login, user, logoutContext } = useAuth();
     const navigation = useNavigate();
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setLeaves((prev) => {
+                if (prev.length >= 3) return prev.slice(1); // Chỉ giữ tối đa 3 lá rơi cùng lúc
+                return [...prev, Math.random()];
+            });
+        }, 2000); // Mỗi 2 giây có 1 lá rơi
+
+        return () => clearInterval(interval);
+    }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
@@ -35,9 +47,14 @@ const Bar: React.FC = () => {
             logoutContext();
             setIsMenuOpen(false);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.log('====================================');
-            console.log('Error:', error.response?.data?.message || error.message);
+            if (error instanceof Error) {
+                const errorMessage = (error as { response?: { data?: { message?: string } } }).response?.data?.message || error.message;
+                console.log('Error:', errorMessage);
+            } else {
+                console.log('Unexpected error', error);
+            }
             console.log('====================================');
         }
     };
@@ -81,9 +98,38 @@ const Bar: React.FC = () => {
     }));
 
     return (
-        <div className=" flex justify-end items-center  bg-white dark:bg-gray-800  text-gray-900 dark:text-white p-4" style={{
+        <div className="flex justify-between items-center  bg-white dark:bg-gray-800  text-gray-900 dark:text-white p-4" style={{
             borderBottom: '1px solid #e5e7eb',
         }}>
+            <>
+                {leaves.map((_, index) => (
+                    <div
+                        key={index}
+                        className="absolute text-yellow-500 opacity-80 animate-fall"
+                        style={{
+                            left: "0vw", // Bắt đầu từ góc trái
+                            top: "-5vh", // Bắt đầu từ trên màn hình
+                            animationDuration: `${4 + Math.random() * 20}s`, // Random tốc độ
+                            fontSize: `${12 + Math.random() * 20}px`,
+                            animationDelay: `${Math.random() * 2}s`, // Random độ trễ
+                        }}
+                    >
+                        <Leaf />
+                    </div>
+                ))}
+            </>
+
+            <div className="flex items-center justify-between px-4 py-4 gap-6">
+                <SpaOutlined sx={{
+                    color: 'gray',
+                    fontSize: '50px',
+                    transition: 'color 0.3s',
+                    '&:hover': {
+                        color: 'blue',
+                    },
+                }} />
+                <h1 className={`text-2xl font-bold`}>SPA Royal</h1>
+            </div>
             {!user ? (
                 <div className="flex space-x-4">
                     <button
@@ -100,7 +146,7 @@ const Bar: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <>
+                <div className='flex items-center'>
                     <IconButton
                         size="large"
                         aria-label="show 17 new notifications"
@@ -160,7 +206,7 @@ const Bar: React.FC = () => {
                         )}
                     </div>
 
-                </>
+                </div>
             )}
         </div>
     );

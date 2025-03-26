@@ -1,196 +1,289 @@
+import { useState, useEffect } from "react";
+import { getEmployees, getPositions, updateEmployee, deleteEmployee, activeEmp, deactiveEmp } from "../../service/apiService";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Edit3 } from "lucide-react";
+import { ContentPasteOffOutlined, ContentPasteOutlined, Delete } from "@mui/icons-material";
+import { motion } from 'framer-motion'
 
-import { Add, Delete, Edit, Save, Search } from '@mui/icons-material';
-import { Avatar, Badge, Box, InputAdornment, styled, TextField } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { format } from 'date-fns';
-
-
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    backgroundColor: '#44b700',
-    color: '#44b700',
-    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-    '&::after': {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '50%',
-      animation: 'ripple 1.2s infinite ease-in-out',
-      border: '1px solid currentColor',
-      content: '""',
-    },
-  },
-  '@keyframes ripple': {
-    '0%': {
-      transform: 'scale(.8)',
-      opacity: 1,
-    },
-    '100%': {
-      transform: 'scale(2.4)',
-      opacity: 0,
-    },
-  },
-}));
+const EmployeeList = () => {
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [positions, setPositions] = useState<any[]>([]);
+  const [editingRows, setEditingRows] = useState<{ [key: number]: any }>({});
+  const [editMode, setEditMode] = useState<{ [key: number]: boolean }>({});
+  const [backupData, setBackupData] = useState<{ [key: number]: any }>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
 
-const columns: GridColDef<(typeof rows)[number]>[] = [
-  { field: 'id', headerName: 'ID', width: 90 },
-  {
-    field: 'Hình ảnh',
-    width: 150,
-    renderCell: (params) => (
-      <StyledBadge
-        overlap="circular"
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        variant="dot"
-      >
-        <Avatar alt={params.row.name}
-          src={params.row.imageUrl} />
-      </StyledBadge>
-    ),
-  },
-  {
-    field: 'name',
-    headerName: 'Tên nhân viên',
-    width: 150,
-    editable: true,
-  },
-  {
-    field: 'email',
-    headerName: 'Email',
-    width: 150,
-    editable: true,
-  },
-  {
-    field: 'phone',
-    headerName: 'Số điện thoại',
-    type: 'number',
-    width: 110,
-    editable: true,
-  },
-  {
-    field: 'address',
-    headerName: 'Địa chỉ',
-    description: 'This column has a value getter and is not sortable.',
-    sortable: false,
-    width: 160,
-  },
-  {
-    field: 'chucvu',
-    headerName: 'Chức vụ',
-    width: 150,
-    editable: true,
-  },
-  {
-    field: 'createdAt',
-    headerName: 'Ngày tạo',
-    width: 180,
-    editable: false,
-    valueFormatter: (params) => {
-      return format(new Date(params), 'dd/MM/yyyy HH:mm:ss');
+  useEffect(() => {
+    fetchEmployees();
+    fetchPositions();
+  }, []);
+
+  // Lấy danh sách nhân viên
+  const fetchEmployees = async () => {
+    try {
+      const response = await getEmployees();
+      setEmployees(response);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
     }
-  },
-  {
-    field: 'status',
-    headerName: 'Trạng thái',
-    width: 150,
-    editable: true,
-  }
-];
+  };
 
-const rows = [
-  {
-    id: 1, address: "HCM",
-    createdAt: "2025-01-21T23:59:30.370998",
-    description: "Quản lý phòng IT kiêm giám đốc gg",
-    email: "ocmd56@gmail.com",
-    imageUrl: "https://res.cloudinary.com/dokp7ig0u/image/upload/v1737478765/spa/Avatar2_9_bomvea.png",
-    name: "Toán cao cấp",
-    phone: "0987654321",
-    roles: "superadmin",
-    username: "admin"
-  },
-  {
-    id: 2, address: "HCM",
-    createdAt: "2025-01-21T23:59:30.370998",
-    description: "Quản lý phòng IT kiêm giám đốc gg",
-    email: "ocmd56@gmail.com",
-    imageUrl: "https://res.cloudinary.com/dokp7ig0u/image/upload/v1737478765/spa/Avatar2_9_bomvea.png",
-    name: "Toán cao cấp",
-    phone: "0987654321",
-    roles: "superadmin",
-    username: "admin"
-  },
-  {
-    id: 3, address: "HCM",
-    createdAt: "2025-01-21T23:59:30.370998",
-    description: "Quản lý phòng IT kiêm giám đốc gg",
-    email: "ocmd56@gmail.com",
-    imageUrl: "https://res.cloudinary.com/dokp7ig0u/image/upload/v1737478765/spa/Avatar2_9_bomvea.png",
-    name: "Toán cao cấp",
-    phone: "0987654321",
-    roles: "superadmin",
-    username: "admin"
-  }
-];
+  // Lấy danh sách chức vụ
+  const fetchPositions = async () => {
+    try {
+      const response = await getPositions();
+      setPositions(response);
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+    }
+  };
 
-const DanhSachNV: React.FC = () => {
+  // Chỉnh sửa thông tin nhân viên - thay đổi giá trị
+  const handleEditChange = (staffId: number, field: string, value: any) => {
+    if (field === "status") return;
+    setEditingRows((prev) => ({
+      ...prev,
+      [staffId]: {
+        ...prev[staffId],
+        [field]: value,
+      },
+    }));
+  };
+
+  // Chọn để chỉnh sửa thông tin nhân viên
+  const handleEdit = (staffId: number) => {
+    setBackupData((prev) => ({ ...prev, [staffId]: employees.find(emp => emp.staffId === staffId) }));
+    setEditMode((prev) => ({ ...prev, [staffId]: true }));
+  };
+
+  // Hủy chỉnh sửa thông tin nhân viên
+  const handleCancelEdit = (staffId: number) => {
+    setEditingRows((prev) => {
+      const newRows = { ...prev };
+      delete newRows[staffId];
+      return newRows;
+    });
+    setEditMode((prev) => ({ ...prev, [staffId]: false }));
+  };
+
+  // Lưu thông tin nhân viên đã chỉnh sửa
+  const handleSaveEmployee = async (staffId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn cập nhật thông tin nhân viên này không?")) return;
+    try {
+      const updatedEmployee = employees.find((emp) => emp.staffId === staffId);
+      if (!updatedEmployee) return;
+
+      const updatedData = {
+        ...updatedEmployee,
+        ...editingRows[staffId],
+        positionId: editingRows[staffId]?.positionId ?? updatedEmployee.position?.positionId,
+        position: {
+          ...updatedEmployee.position,
+          positionId: editingRows[staffId]?.positionId ?? updatedEmployee.position?.positionId,
+        }
+      };
+
+
+      await updateEmployee(staffId, updatedData);
+      await fetchEmployees();
+      setEmployees((prev) =>
+        prev.map((emp) => (emp.staffId === staffId ? { ...updatedData } : emp))
+      );
+
+      setEditingRows((prev) => {
+        const newRows = { ...prev };
+        delete newRows[staffId];
+        return newRows;
+      });
+      setEditMode((prev) => ({ ...prev, [staffId]: false }));
+      toast.success("Cập nhật thông tin nhân viên thành công!");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin nhân viên:", error);
+      toast.error("Cập nhật thất bại!");
+    }
+  };
+
+  // Xóa nhân viên
+  const handleDeleteEmployee = async (staffId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa nhân viên này không?")) return;
+    try {
+
+      const response = await deleteEmployee(staffId);
+      setEmployees((prev) => prev.filter((emp) => emp.staffId !== staffId));
+      return response;
+      toast.success("Xóa nhân viên thành công!");
+    } catch (error: any) {
+      console.error("🔥 Lỗi toàn bộ:", error);
+
+      if (error?.data?.code === 1006) {
+        toast.error("Không thể xóa nhân viên này đang liên quan đến dịch vụ nào đó!");
+      } else {
+        toast.error(error?.data?.message || "Xóa nhân viên thất bại!");
+      }
+    }
+
+  };
+
+  // Lọc danh sách nhân viên theo tên và trạng thái
+  const filteredEmployees = employees.filter((emp) => {
+    return (
+      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (statusFilter === "" || emp.status === statusFilter)
+    );
+  });
+
+  // Deactivate nhân viên
+  const handleDeactivate = async (staffId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn ngưng làm việc nhân viên này không?")) return;
+    try {
+      await deactiveEmp(staffId);
+      await fetchEmployees();
+      toast.success("Ngưng làm việc nhân viên thành công!");
+    } catch (error) {
+      console.error("Lỗi khi ngưng làm việc nhân viên:", error);
+      toast.error("Ngưng làm việc thất bại!");
+    }
+  }
+
+  // Activate nhân viên
+  const handleActivate = async (staffId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn kích hoạt nhân viên này không?")) return;
+    try {
+      await activeEmp(staffId);
+      await fetchEmployees();
+      toast.success("Kích hoạt nhân viên thành công!");
+    } catch (error) {
+      console.error("Lỗi khi kích hoạt nhân viên:", error);
+      toast.error("Kích hoạt thất bại!");
+    }
+  }
 
 
   return (
-    <div className="flex flex-col items-center justify-center">
-    <div className="">
-      <h2 className="font-bold text-3xl">Danh sách nhân viên</h2>     
-    </div>
-    <div className="flex w-full mb-3 mt-4">
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"><Add/> Thêm</button>
-      <button className="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded-md"><Delete/> Xóa</button>
-      <button className="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md"><Edit/> Sửa</button>
-      <button className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"><Save/> Lưu</button>
-      <button className="ml-2 bg-red-400 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded-md">Đóng</button>
-    </div>
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-3">
-        <Box sx={{ minWidth: 300 }}>
-          <TextField
-            variant="outlined"
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
-      </div>
-    </div>
-      <Box sx={{ height: 550, width: '99%', maxWidth: '78vw', paddingBottom: '50px' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
-          pageSizeOptions={[10]}
-          checkboxSelection
-          editMode="cell"
-          onRowClick={(params) => console.log('Row clicked:', params.row)}
-          disableRowSelectionOnClick
-          className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="p-6 w-full max-w-6xl mx-auto">
+      <ToastContainer />
+      <h2 className="text-3xl font-bold mb-6 text-center">Danh Sách Nhân Viên</h2>
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo tên..."
+          className="border p-2 rounded w-full"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
-      </Box>
-    </div>
+        <select
+          className="border p-2 rounded"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">Tất cả trạng thái</option>
+          <option value="ACTIVE">Hoạt động</option>
+          <option value="DEACTIVATED">Không hoạt động</option>
+        </select>
+      </div>
+      <div className="grid gap-32 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" style={{ marginLeft: "-70px" }}>
+        {filteredEmployees.map((employee) => (
+          <div key={employee.staffId} className="bg-white p-4 rounded-lg shadow-md" style={{ width: "300px" }}>
+            <img src={employee.imageUrl} alt="Ảnh" className="w-24 h-24 mx-auto rounded-full object-cover" />
+            <div className="mt-4 text-center">
+              {editMode[employee.staffId] ? (
+                <>
+                  <label className="block text-gray-600 text-sm m-1 text-justify">Họ và tên</label>
+                  <input
+                    className="w-full border p-2 rounded"
+                    value={editingRows[employee.staffId]?.name ?? employee.name}
+                    onChange={(e) => handleEditChange(employee.staffId, "name", e.target.value)}
+                  />
+                  <label className="block text-gray-600 text-sm m-1 text-justify">Email</label>
+                  <input
+                    className="w-full border p-2 rounded mt-2"
+                    value={editingRows[employee.staffId]?.email ?? employee.email}
+                    onChange={(e) => handleEditChange(employee.staffId, "email", e.target.value)}
+                  />
+                  <label className="block text-gray-600 text-sm m-1 text-justify">Số điện thoại</label>
+                  <input
+                    className="w-full border p-2 rounded mt-2"
+                    value={editingRows[employee.staffId]?.phone ?? employee.phone}
+                    onChange={(e) => handleEditChange(employee.staffId, "phone", e.target.value)}
+                  />
+                  <label className="block text-gray-600 text-sm m-1 text-justify">Địa chỉ</label>
+                  <input
+                    className="w-full border p-2 rounded mt-2"
+                    value={editingRows[employee.staffId]?.address ?? employee.address}
+                    onChange={(e) => handleEditChange(employee.staffId, "address", e.target.value)}
+                  />
+                  <label className="block text-gray-600 text-sm m-1 text-justify">Chức vụ</label>
+                  <select
+                    className="w-full mt-2 border p-2 rounded"
+                    value={editingRows[employee.staffId]?.positionId ?? employee.position?.positionId}
+                    onChange={(e) => handleEditChange(employee.staffId, "positionId", Number(e.target.value))}
+                  >
+                    {positions.map((pos) => (
+                      <option key={pos.positionId} value={pos.positionId}>{pos.positionName}</option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <div className="text-justify" style={{ height: "150px", lineHeight: "1.9" }}>
+                  <p className="text-lg font-semibold">{employee.name}</p>
+                  <p className=" text-gray-400">Email: {employee.email}</p>
+                  <p className=" text-gray-400">{employee.phone}</p>
+                  <p className=" text-gray-400">{employee.address}</p>
+                  <p className=" text-gray-400">{employee.position?.positionName}</p>
+                </div>
 
 
+              )}
+              <p className={`mt-2 px-2 py-1 rounded-2xl text-sm ${employee.status === "ACTIVE" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"}`}>
+                <span className="animate-ping" style={{
+                  width: "8px",
+                  marginRight: "10px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  display: "inline-block",
+                  backgroundColor: employee.status === "ACTIVE" ? "#10B981" : "#EF4444",
+                }}></span>{employee.status === "ACTIVE" ? "Đang làm việc" : "Đã nghỉ việc"}
+              </p>
+              <div className="mt-4 flex justify-center gap-2">
+                {editMode[employee.staffId] ? (
+                  <>
+                    <button onClick={() => handleSaveEmployee(employee.staffId)} className="px-4 py-2 bg-blue-200 text-white rounded hover:bg-blue-500">Lưu</button>
+                    <button onClick={() => handleCancelEdit(employee.staffId)} className="px-4 py-2 bg-gray-200 text-white rounded hover:bg-gray-500">Hoàn Tác</button>
+
+                    {employee.status === "ACTIVE" && (
+                      <button title="Ngừng làm việc" onClick={() => handleDeactivate(employee.staffId)} className="px-4 py-2 bg-red-200 text-white rounded hover:bg-red-500"><ContentPasteOffOutlined /></button>
+                    )}
+
+                    {employee.status === "DEACTIVATED" && (
+                      <button title="Kích hoạt" onClick={() => handleActivate(employee.staffId)} className="px-4 py-2 bg-green-200 text-white rounded hover:bg-green-500"><ContentPasteOutlined /></button>
+                    )}
+
+                  </>
+                ) : (
+                  <div className="flex items-center gap-10">
+                    <button onClick={() => handleEdit(employee.staffId)} className="px-3 py-3 bg-blue-300 text-white rounded-full hover:bg-blue-500"><Edit3 /></button>
+                    <button onClick={() => handleDeleteEmployee(employee.staffId)} className="px-3 py-3 bg-red-300 text-white rounded-full hover:bg-red-500"><Delete /></button>
+                  </div>
+
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+        {filteredEmployees.length === 0 &&
+          <div className="text-center text-gray-400 col-span-full mt-10">Không tìm thấy nhân viên nào!
+          </div>}
+
+      </div>
+    </motion.div>
   );
-}
+};
 
-export default DanhSachNV;
+export default EmployeeList;

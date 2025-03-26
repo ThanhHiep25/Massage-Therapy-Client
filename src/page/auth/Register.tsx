@@ -2,17 +2,17 @@ import { useState } from "react";
 import { registerUser, verifyOtp } from "../../service/apiService";
 import axios from "axios";
 import { CloudUpload } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
-    username: "",
     email: "",
-    phone:"",
+    phone: "",
     password: "",
-    address: "",
     imageUrl: "",// Lưu avatar dưới dạng URL từ Cloudinary
-    description:"", 
+
   });
   const [message, setMessage] = useState<string>("");
   const [otp, setOtp] = useState<string>(""); // OTP state
@@ -21,6 +21,7 @@ const RegisterForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false); // Trạng thái xử lý
   const [imageFile, setImageFile] = useState<File | null>(null); // Lưu trữ file ảnh
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const navigation = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -64,40 +65,9 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  const validateForm = () => {
-    const nameRegex = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
-    const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    const addressRegex = /^[A-Za-z0-9À-ỹ\s,.-]{5,100}$/;
-  
-    if (!nameRegex.test(formData.name)) {
-      setMessage("Tên không hợp lệ (chỉ chữ cái và khoảng trắng, tối đa 50 ký tự).");
-      return false;
-    }
-    if (!usernameRegex.test(formData.username)) {
-      setMessage("Tên đăng nhập không hợp lệ (4-20 ký tự, không dấu cách).");
-      return false;
-    }
-    if (!emailRegex.test(formData.email)) {
-      setMessage("Email không hợp lệ.");
-      return false;
-    }
-    if (!passwordRegex.test(formData.password)) {
-      setMessage("Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
-      return false;
-    }
-    if (!addressRegex.test(formData.address)) {
-      setMessage("Địa chỉ không hợp lệ (5-100 ký tự).");
-      return false;
-    }
-    return true;
-  };
-  
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
     setIsLoading(true);
     try {
       let imageUrl = formData.imageUrl;
@@ -119,7 +89,7 @@ const RegisterForm: React.FC = () => {
       if (imageFile) {
         const uploadFormData = new FormData();
         uploadFormData.append("file", imageFile);
-        uploadFormData.append("upload_preset", "spamassage");
+        uploadFormData.append("upload_preset", "customer");
 
         const response = await axios.post(
           "https://api.cloudinary.com/v1_1/dokp7ig0u/image/upload",
@@ -138,10 +108,14 @@ const RegisterForm: React.FC = () => {
       await registerUser(userToRegister); // Gửi thông tin đăng ký
       setMessage("OTP đã được gửi đến email của bạn.");
       setIsOtpSent(true); // OTP đã được gửi
+
     } catch (error: unknown) {
-      if (error instanceof Error) {
+      if (error) {
         const err = error as any;
         setMessage(`Error: ${err.response?.data?.message || err.message}`);
+      } else if (axios.isAxiosError(error) && error.response?.data?.codecode === 1000) {
+        setMessage("Email đã tồn tại");
+        setIsOtpSent(false);
       } else {
         setMessage("Đã xảy ra lỗi không xác định.");
       }
@@ -167,157 +141,158 @@ const RegisterForm: React.FC = () => {
       } else {
         setMessage("OTP không hợp lệ hoặc đã hết hạn.");
       }
-    } catch (error: any) {
-      setMessage(`Lỗi: ${error.response?.data?.message || error.message}`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setMessage(`Lỗi: ${error.response?.data?.message || error.message}`);
+      } else {
+        setMessage("Đã xảy ra lỗi không xác định.");
+      }
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg"
-    >
-      <h2 className="text-3xl font-semibold text-center mb-6">Đăng ký</h2>
+    <div className="relative w-full min-h-screen px-4 sm:px-8 lg:px-16 flex flex-col md:flex-row items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black">
+      {/* Nút quay lại */}
+      <div className="absolute top-4 left-4">
+        <a className="text-white hover:underline cursor-pointer" onClick={() => navigation(-1)}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+      </div>
 
-      {!isOtpSent ? (
-        <>
-          <div className="mb-4">
-            <input
-              name="name"
-              placeholder="Tên"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              name="username"
-              placeholder="Tên đăng nhập"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              name="phone"
-              type="text"
-              placeholder="Số điện thoại"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              name="password"
-              type="password"
-              placeholder="Mật khẩu"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="text"
-              name="address"
-              placeholder="Địa chỉ"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="text"
-              name="description"
-              placeholder="Mô tả cơ bản"
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="file-upload"
-              className="flex flex-col items-center justify-center w-full h-40 p-4 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 border-gray-300 dark:border-gray-600"
-            >
-              <CloudUpload className="text-gray-500 dark:text-gray-400" fontSize="large" />
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Kéo & thả hoặc nhấn để chọn ảnh</p>
-              <input
-                id="file-upload"
-                type="file"
-                name="avatar"
-                onChange={handleFileChange}
-                accept="image/*"
-                className="hidden"
-              />
-            </label>
+      {/* Hộp chứa nội dung */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col md:flex-row items-center justify-center w-full md:w-[80%] lg:w-[65%] bg-white/10 backdrop-blur-lg p-6 sm:p-8 md:p-10 rounded-2xl shadow-xl text-white border border-white/20"
+      >
+        {/* Nội dung chào mừng */}
+        <div className="flex flex-col items-center justify-center md:mr-10 text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-wider">Chào mừng đến với Spa</h1>
+          <p className="text-sm sm:text-lg text-gray-300 mt-2">Nơi thư giãn tuyệt đối với liệu pháp chăm sóc tự nhiên.</p>
+        </div>
 
-            {imagePreview && (
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Ảnh xem trước:</p>
-                <img
-                  src={imagePreview}
-                  alt="Xem trước"
-                  className="w-40 h-40 object-cover rounded-xl shadow-md mx-auto border border-gray-300 dark:border-gray-600"
+        {/* Form đăng ký */}
+        <form onSubmit={handleSubmit} className="w-full max-w-md bg-white/10 backdrop-blur-lg p-6 sm:p-8 rounded-2xl shadow-xl text-white border border-white/20 mt-6 md:mt-0">
+          <div className="mb-6 text-center">
+            <h1 className="text-2xl sm:text-3xl font-semibold">Đăng ký tài khoản</h1>
+            <p className="text-gray-200">Vui lòng điền thông tin để đăng ký tài khoản.</p>
+          </div>
+
+          {!isOtpSent ? (
+            <>
+              {/* Upload avatar */}
+              <div className="mb-6 flex justify-center">
+                <label
+                  htmlFor="file-upload"
+                  className="relative flex flex-col items-center justify-center w-28 h-28 sm:w-32 sm:h-32 border-2 border-dashed rounded-full cursor-pointer bg-white/20 hover:bg-white/30 transition-all duration-300"
+                >
+                  {!imagePreview ? (
+                    <>
+                      <CloudUpload className="text-gray-300" fontSize="large" />
+                      <p className="text-xs text-gray-200 mt-1">Nhấn để tải ảnh</p>
+                    </>
+                  ) : (
+                    <img src={imagePreview} alt="Xem trước" className="w-full h-full object-cover rounded-full" />
+                  )}
+                  <input id="file-upload" type="file" name="avatar" onChange={handleFileChange} accept="image/*" className="hidden" />
+                </label>
+              </div>
+
+              {/* Hiển thị lỗi nếu có */}
+              {message && <p className="mt-4 mb-4 text-center text-red-300 text-sm">{message}</p>}
+
+              {/* Email */}
+              <div className="mb-4">
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  onChange={handleChange}
+                  className="w-full p-3 bg-white/60 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
               </div>
-            )}
-          </div>
 
-          <button
-            type="submit"
-            className={`w-full ${isLoading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
-              } text-white p-3 rounded-md transition duration-200`}
-            disabled={isLoading}
-          >
-            {isLoading ? "Đang xử lý..." : "Đăng ký"}
-          </button>
-        </>
-      ) : !isOtpVerified ? (
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Nhập OTP"
-            value={otp}
-            onChange={handleOtpChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <button
-            onClick={handleVerifyOtp}
-            className={`w-full ${isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-              } text-white p-3 rounded-md transition duration-200 mt-4`}
-            disabled={isLoading}
-          >
-            {isLoading ? "Đang xác thực..." : "Xác thực OTP"}
-          </button>
-        </div>
-      ) : (
-        <div className="text-center mt-4">
-          <p className="text-green-500">
-            Đăng ký hoàn tất! Bạn đã được đăng ký.
-          </p>
-        </div>
-      )}
+              {/* Name & Phone */}
+              <div className="mb-4 flex flex-col sm:flex-row gap-4">
+                <input
+                  name="name"
+                  placeholder="Tên"
+                  onChange={handleChange}
+                  className="w-full sm:w-1/2 p-3 bg-white/60 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                <input
+                  name="phone"
+                  type="text"
+                  placeholder="Số điện thoại"
+                  onChange={handleChange}
+                  className="w-full sm:w-1/2 p-3 bg-white/60 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
 
-      {message && (
-        <p className="mt-4 text-center text-red-500 text-sm">{message}</p>
-      )}
-    </form>
+              {/* Password */}
+              <div className="mb-4">
+                <input
+                  name="password"
+                  type="password"
+                  placeholder="Mật khẩu"
+                  onChange={handleChange}
+                  className="w-full p-3 bg-white/60 text-black border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Nút đăng ký */}
+              <button
+                type="submit"
+                className={`w-full ${isLoading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"} text-white p-3 rounded-md transition duration-200`}
+                disabled={isLoading}
+              >
+                {isLoading ? "Đang xử lý..." : "Đăng ký"}
+              </button>
+            </>
+          ) : !isOtpVerified ? (
+            <>
+              {/* OTP Input */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Nhập OTP"
+                  value={otp}
+                  onChange={handleOtpChange}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <button
+                onClick={handleVerifyOtp}
+                className={`w-full ${isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"} text-white p-3 rounded-md transition duration-200`}
+                disabled={isLoading}
+              >
+                {isLoading ? "Đang xác thực..." : "Xác thực OTP"}
+              </button>
+            </>
+          ) : (
+            <div className="text-center mt-4">
+              <p className="text-green-500">Đăng ký hoàn tất! Bạn đã được đăng ký.</p>
+            </div>
+          )}
+
+        </form>
+      </motion.div>
+    </div>
+
   );
 };
 

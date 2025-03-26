@@ -12,13 +12,13 @@ const GoogleLoginButton = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center">
+    <div className="mt-4 w-5/12">
     <button
       onClick={handleLogin}
       className="bg-red-500 text-white px-4 py-2 rounded-full flex items-center justify-center space-x-2 w-full"
     >
       <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/IOS_Google_icon.png" className="w-6 h-6" />
-      <span>Đăng nhập với Google</span>
+      <span>Google</span>
     </button>
   </div>
   );

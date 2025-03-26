@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Card, CardContent, Typography, InputAdornment, IconButton, Alert } from '@mui/material';
+import { Alert } from '@mui/material';
 import { resetPassword, sendResetPassword } from '../../service/apiService';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion'
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -21,22 +22,22 @@ const ForgotPassword: React.FC = () => {
     const isValidEmail = (email: string) => {
         return /\S+@\S+\.\S+/.test(email);
     };
-    
+
     const handleSendOtp = async () => {
         if (!email) {
             setError("Vui lòng nhập email.");
             return;
         }
-    
+
         if (!isValidEmail(email)) {
             setError("Email không hợp lệ.");
             return;
         }
-    
+
         setError(null);
         setSuccess(null);
         setLoading(true);
-    
+
         try {
             await sendResetPassword(email);
             setStep(2);
@@ -49,7 +50,7 @@ const ForgotPassword: React.FC = () => {
             setLoading(false);
         }
     };
-    
+
 
     const handleResetPassword = async () => {
         if (attemptsLeft === 0) {
@@ -110,7 +111,7 @@ const ForgotPassword: React.FC = () => {
             interval = setInterval(() => {
                 setTimer((prev) => prev - 1);
             }, 1000);
-        }else if(timer === 0) {
+        } else if (timer === 0) {
             setOtp('');
         }
         return () => clearInterval(interval);
@@ -122,113 +123,124 @@ const ForgotPassword: React.FC = () => {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    const toggleShowPassword = () => {
-        setShowPassword((prev) => !prev);
-    };
+
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800 dark:text-white">
-            <Card className="w-full max-w-md shadow-lg">
-                <CardContent>
-                    <Typography variant="h5" className="mb-4 text-center font-bold">
+        <div className="relative w-full min-h-screen px-4 sm:px-8 lg:px-16 flex flex-col sm:flex-row items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black">
+            {/* Nút quay lại */}
+            <div className="absolute top-4 left-4" >
+                <a className="text-white hover:underline cursor-pointer" onClick={() => navigation(-1)}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-8 w-8 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+            </div>
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full max-w-md bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-xl text-white border border-white/20">
+                <div>
+                    <h2 className="text-2xl font-bold text-center mb-4">
                         {step === 1 ? 'Quên mật khẩu' : 'Đặt lại mật khẩu'}
-                    </Typography>
+                    </h2>
 
                     {error && <Alert severity="error" className="mb-4">{error}</Alert>}
                     {success && <Alert severity="success" className="mb-4">{success}</Alert>}
 
                     {step === 1 && (
                         <>
-                            <TextField
-                                label="Email"
+                            <input
+                                name="email"
                                 type="email"
-                                fullWidth
+                                placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mb-4"
+                                className="mb-4 w-full px-4 py-2 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                 disabled={loading}
                             />
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                fullWidth
+                            <button
+                                type='submit'
+                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
                                 onClick={handleSendOtp}
                                 disabled={!email || loading}
                             >
                                 {loading ? 'Đang gửi...' : 'Gửi OTP'}
-                            </Button>
+                            </button>
                         </>
                     )}
 
                     {step === 2 && (
                         <>
                             <div className="flex flex-row items-center mb-4">
-                                <TextField
-                                    label="OTP"
-                                    fullWidth
+                                <input
+                                    type="text"
+                                    placeholder="OTP"
+                                    pattern="[0-9]{6}"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    className="mb-4"
+                                    className=" w-full px-4 py-2 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                     disabled={loading}
                                 />
 
-                                <Typography className="text-red-400 text-center pl-4 mb-2 font-medium">
+                                <p className="text-red-400 text-center pl-4 mb-2 font-medium">
                                     {timer > 0 ? `${formatTime(timer)}` : 'OTP đã hết hạn.'}
-                                </Typography>
+                                </p>
 
                             </div>
+                            <div className="relative w-full">
+                                <input
+                                    placeholder="Mật khẩu mới"
+                                    type={showPassword ? "text" : "password"}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    disabled={loading}
+                                    className="mb-4 w-full px-4 py-4 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute top-7 right-3 transform -translate-y-1/2 text-gray-500"
+                                >
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </button>
+                            </div>
 
-                            <TextField
-                                label="Mật khẩu mới"
-                                type={showPassword ? 'text' : 'password'}
-                                fullWidth
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="mb-4"
-                                disabled={loading}
-                                InputProps={{
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <IconButton onClick={toggleShowPassword} edge="end">
-                                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
+
 
                             <div className=" flex flex-col items-center">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    fullWidth
+                                <button
+                                    type='submit'
+                                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
                                     onClick={handleResetPassword}
                                     disabled={!otp || !newPassword || timer === 0 || loading}
-                                    sx={{ mt: 2 }}
                                 >
                                     {loading ? 'Đang xử lý...' : 'Đặt lại mật khẩu'}
-                                </Button>
+                                </button>
 
                                 {timer === 0 && (
-                                    <Button
-                                        variant="outlined"
-                                        color="secondary"
-                                        fullWidth
+                                    <button
+                                        type='submit'
+                                        className=" mt-4 w-full bg-purple-400 hover:bg-purple-600 text-white font-semibold py-2 rounded-md"
                                         onClick={handleSendOtp}
-                                        className="mt-2"
                                         disabled={loading}
-                                        sx={{ mt: 2, width: '200px' }}
                                     >
                                         Gửi lại OTP
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
 
 
                         </>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </motion.div>
         </div>
     );
 };

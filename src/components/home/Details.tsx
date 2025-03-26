@@ -1,12 +1,13 @@
 
 import PageDetail from "../../page/auth/PageDetails";
-import DanhSachKH from "../../page/customer-KhachHang/Danh_sach_KH";
+import CustomersList from "../../page/customer-KhachHang/Danh_sach_KH";
+import AddCustomerForm from "../../page/customer-KhachHang/Them_khach_hang";
 import DichVuTK from "../../page/dashboard-ThongKe/Dich_Vu_TK";
 import HieuSuatNV from "../../page/dashboard-ThongKe/Hieu_suat_NV";
 import ThongKeTC from "../../page/dashboard-ThongKe/Thong_Ke_TC";
 import LichSuDichVu from "../../page/history/LS_Dichvu";
 import LichSuKhachHang from "../../page/history/LS_Khachhang";
-import DanhSachNV from "../../page/staff-Nhanvien/Danh_sach_NV";
+import EmployeeList from "../../page/staff-Nhanvien/Danh_sach_NV";
 import ThemMoiNV from "../../page/staff-Nhanvien/Them_nhan_vien";
 
 
@@ -16,7 +17,7 @@ interface DetailsProps {
 
 const Details: React.FC<DetailsProps> = ({ currentPage }) => {
     return (
-        <div className="overflow-y-auto p-4  bg-white dark:bg-gray-800  text-gray-900 dark:text-white" style={{ height: 'calc(100vh - 64px)' }}>
+        <div className="overflow-y-auto p-4 pb-10 bg-gray-200 dark:bg-gray-800  text-gray-900 dark:text-white" style={{ height: 'calc(100vh - 64px)' }}>
             
             {/* Render chi tiết trang tùy thuộc vào currentPage */}
             
@@ -27,10 +28,11 @@ const Details: React.FC<DetailsProps> = ({ currentPage }) => {
 
             {/* Nhan vien */}
             {currentPage === 'themNV' && <ThemMoiNV/>}
-            {currentPage === 'danhsachNV' && <DanhSachNV/>}
+            {currentPage === 'danhsachNV' && <EmployeeList/>}
 
             {/* Khach hang */}
-            {currentPage === "danhsachKH" && <DanhSachKH/>}
+            {currentPage === 'themKH' && <AddCustomerForm />}
+            {currentPage === "danhsachKH" && <CustomersList/>}
 
             {/* Lịch hẹn */}
             

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hook/AuthContext";
 import { Edit, FileCopy, Share, Save, Cancel } from "@mui/icons-material";
 import { Backdrop, Box, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Button, Snackbar } from "@mui/material";
+import { Mail, MapPinHouse, Phone } from "lucide-react";
 
 const actions = [
   { icon: <FileCopy />, name: 'Copy' },
@@ -27,14 +28,16 @@ const ProfileDetail: React.FC = () => {
   };
 
   const handleSave = () => {
-    login(userData);
+    if (userData) {
+      login(userData);
+    }
     setEditMode(false);
     localStorage.setItem("user", JSON.stringify(userData));
     setSnackbar({ open: true, message: 'Đã lưu thông tin!' });
   };
 
   const handleCopy = () => {
-    const textToCopy = `Tên: ${userData?.name}\nEmail: ${userData?.email}\nSĐT: ${userData?.phone}\nĐịa chỉ: ${userData?.address}\nMô tả: ${userData?.description}`;
+    const textToCopy = `${userData?.name}\n: ${userData?.email}\n: ${userData?.phone}\n: ${userData?.address}\n: ${userData?.description}`;
     navigator.clipboard.writeText(textToCopy);
     setSnackbar({ open: true, message: 'Đã sao chép thông tin!' });
   };
@@ -50,27 +53,25 @@ const ProfileDetail: React.FC = () => {
         address: userData?.address || '',
         description: userData?.description || '',
       };
-  
+
       // Chuyển đổi dữ liệu Unicode sang Base64 an toàn
       const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(dataToShare))));
-  
+
       const shareLink = `${window.location.origin}/profile?data=${encodedData}`;
-  
+
       navigator.clipboard.writeText(shareLink).then(() => {
         setSnackbar({ open: true, message: '✅ Đã sao chép link chia sẻ!' });
       }).catch((err) => {
         console.error('❌ Lỗi khi sao chép link:', err);
         setSnackbar({ open: true, message: '❌ Không thể sao chép link!' });
       });
-  
+
     } catch (error) {
       console.error('❌ Lỗi khi tạo link chia sẻ:', error);
-      setSnackbar({ open: true, message: `❌ Lỗi: ${error.message}` });
+      const errorMessage = error instanceof Error ? error.message : 'Không xác định';
+      setSnackbar({ open: true, message: `❌ Lỗi: ${errorMessage}` });
     }
   };
-  
-  
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
@@ -78,7 +79,7 @@ const ProfileDetail: React.FC = () => {
 
   useEffect(() => {
     const encodedData = params.get('data');
-  
+
     if (encodedData) {
       try {
         // Giải mã Base64 và xử lý Unicode
@@ -90,8 +91,8 @@ const ProfileDetail: React.FC = () => {
       }
     }
   }, [params]);
-  
-  
+
+
 
   useEffect(() => {
     if (!user) {
@@ -103,14 +104,12 @@ const ProfileDetail: React.FC = () => {
   }, [user, login]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-9" style={{
+    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-9 h-screen w-screen" style={{
       borderRadius: '10px',
-      height: '100%',
-      maxHeight:"100%",
       boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
     }}>
 
-      <div className="w-full max-w-md" style={{ borderRadius: '10px', padding: '20px', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', position: "relative" }}>
+      <div className="sm:w-[50vw] w-[500px] max-w-full h-screen relative" >
         <h2 style={{
           fontSize: '24px',
           fontWeight: 'bold',
@@ -124,29 +123,36 @@ const ProfileDetail: React.FC = () => {
           maxWidth: '400px'
         }}>Thông tin cá nhân</h2>
 
-        <img src={userData?.imageUrl || params?.get('imageUrl')} alt="Avatar" style={{ width: '100px', height: '100px', borderRadius: '50%', marginTop: "20px", objectFit:'cover'}} />
-
-        {editMode ? (
-          <div className="bg-white p-2 mt-2 rounded-2xl" >
-            <TextField label="Tên" name="name" value={userData?.name} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-            <TextField label="Email" name="email" value={userData?.email} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-            <TextField label="Số điện thoại" name="phone" value={userData?.phone} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-            <TextField label="Địa chỉ" name="address" value={userData?.address} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-            <TextField label="Mô tả" name="description" value={userData?.description} onChange={handleChange} fullWidth margin="normal" variant="outlined" multiline rows={3} />
-            <div className="flex justify-between mt-4">
-              <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSave}>Lưu</Button>
-              <Button variant="text" color="error" startIcon={<Cancel />} onClick={handleCancel}>Hủy</Button>
-            </div>
+        <div className="sm:flex sm:justify-around mt-20">
+          <div className="sm:w-[50%] flex flex-col items-center mt-10">
+            <img src={userData?.imageUrl || params?.get('imageUrl')} alt="Avatar"
+              className="sm:h-52 sm:w-52 w-[100px] h-[100px] rounded-full object-cover" />
+            <p className="px-6 py-1 bg-amber-300 w-[100px] flex items-center justify-center rounded-full shadow-lg">{userData?.description} {params?.get('description')}</p>
           </div>
-        ) : (
-          <>
-            <p className="mt-3">{userData?.name} {params?.get('name')}</p>
-            <p className="mt-3">Email: {userData?.email} {params?.get('email')}</p>
-            <p className="mt-3">Số điện thoại: {userData?.phone} {params?.get('phone')}</p>
-            <p className="mt-3">Địa chỉ: {userData?.address} {params?.get('address')}</p>
-            <p className="mt-3">Mô tả: {userData?.description} {params?.get('description')}</p>
-          </>
-        )}
+
+          {editMode ? (
+            <div className="bg-white p-2 sm:ml-14 mt-2 rounded-2xl" >
+              <TextField label="Tên" name="name" value={userData?.name} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Email" name="email" value={userData?.email} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Số điện thoại" name="phone" value={userData?.phone} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Địa chỉ" name="address" value={userData?.address} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Loại khách hàng " name="description" value={userData?.description} onChange={handleChange} fullWidth margin="normal" variant="outlined" multiline rows={3} />
+              <div className="flex justify-between mt-4">
+                <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSave}>Lưu</Button>
+                <Button variant="text" color="error" startIcon={<Cancel />} onClick={handleCancel}>Hủy</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="sm:flex sm:flex-col sm:ml-14 mt-10 w-full sm:items-center sm:gap-y-9 gap-y-3 bg-slate-200 rounded-2xl p-6 shadow-md">
+              <p className="mt-3 sm:text-3xl text-lg">{userData?.name} {params?.get('name')}</p>
+              <p className="mt-3 flex items-center gap-6 sm:text-xl tex-lg"><Mail /> {userData?.email} {params?.get('email')}</p>
+              <p className="mt-3 flex items-center gap-6 sm:text-xl text-lg"><Phone /> {userData?.phone} {params?.get('phone')}</p>
+              <p className="mt-3 flex items-center gap-6 sm:text-xl text-lg"><MapPinHouse /> {userData?.address} {params?.get('address')}</p>
+            </div>
+          )}
+        </div>
+
+
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", height: 120, width: "100%" }}>
           <Backdrop open={open} />

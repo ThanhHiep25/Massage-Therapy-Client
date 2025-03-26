@@ -7,6 +7,7 @@ import Home from "../page/home-TrangChinh/Home";
 import SettingsDetail from "../page/setting/SettingsDetail";
 import ProfileDetail from "../page/auth/ProfileDetail";
 import ForgotPassword from "../page/auth/ForgotPassword";
+import Chatbot from "../components/google/Chatbot";
 
 
 
@@ -21,6 +22,8 @@ const NavigatorBrowser: React.FC = () => {
         <Route path="/getuserid" element={<GetUser />} />
         <Route path="/profile" element={<ProfileDetail />} />
         <Route path="/settings" element= {<SettingsDetail />} />
+        <Route path="/chatbot" element={<Chatbot />} />
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>
   );
