@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, Button, Card, CardContent, Typography, InputAdornment, IconButton, Alert } from '@mui/material';
-import { resetPassword, sendResetPassword } from '../../service/apiService';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
+import { resetPassword, sendResetPassword } from '../../service/apiAuth';
+
 
 const ChangePassword: React.FC = () => {
     // Lấy email từ localStorage hoặc context
@@ -24,12 +28,14 @@ const ChangePassword: React.FC = () => {
     useEffect(() => {
         if (!userEmail) {
             setError("Không tìm thấy email. Vui lòng đăng nhập lại.");
+            toast.warn('Không tìm thấy email. Vui lòng đăng nhập lại.')
         }
     }, [userEmail]);
 
     const handleSendOtp = async () => {
         if (!userEmail) {
             setError("Không tìm thấy email. Vui lòng đăng nhập lại.");
+            toast.warn('Không tìm thấy email. Vui lòng đăng nhập lại.')
             return;
         }
 
@@ -42,9 +48,16 @@ const ChangePassword: React.FC = () => {
             setStep(2);
             setTimer(60);
             setSuccess("OTP đã được gửi tới email của bạn.");
-        } catch (error: any) {
+            toast.success('OTP đã được gửi tới email của bạn.')
+        } catch (error: unknown) {
             console.error("Error sending OTP:", error);
-            setError(error.response?.data?.message || "Gửi OTP thất bại. Vui lòng thử lại.");
+            if (axios.isAxiosError(error)) {
+                setError(error.message);
+                setError(error.response?.data?.message || "Gửi OTP thất bại. Vui lòng thử lại.");
+                toast.warning(error.response?.data?.message || "Gửi OTP thất bại. Vui lòng thử lại.")
+            } else {
+                setError("Lỗi không xác định");
+            }
         } finally {
             setLoading(false);
         }
@@ -53,6 +66,7 @@ const ChangePassword: React.FC = () => {
     const handleResetPassword = async () => {
         if (attemptsLeft === 0) {
             setError("Bạn đã nhập sai OTP quá nhiều lần. Vui lòng yêu cầu OTP mới.");
+            toast.error('Bạn đã nhập sai OTP quá nhiều lần. Vui lòng yêu cầu OTP mới.')
             return;
         }
         setError(null);
@@ -65,21 +79,28 @@ const ChangePassword: React.FC = () => {
 
             if (message.includes('OTP hết hạn')) {
                 setError('OTP đã hết hạn. Vui lòng yêu cầu OTP mới.');
+                toast.error('OTP đã hết hạn. Vui lòng yêu cầu OTP mới.')
             } else if (message.includes('OTP không chính xác')) {
                 setAttemptsLeft((prev) => prev - 1);
                 setError('OTP không chính xác. Vui lòng kiểm tra lại.');
+                toast.error('OTP không chính xác. Vui lòng kiểm tra lại.')
             } else if (message.includes('Đặt lại mật khẩu thành công')) {
                 setSuccess('Đặt lại mật khẩu thành công!');
+                toast.success('Đặt lại mật khẩu thành công!')
                 resetForm();
                 setTimeout(() => {
                     navigate('/dashboard');
                 }, 3000);
             } else {
                 setError('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+                toast.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại.')
             }
-        } catch (error: any) {
-            console.error('Error resetting password:', error);
-            setError(error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                console.error('Error resetting password:', error);
+                setError(error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+                toast.warning(error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.')
+            }
         } finally {
             setLoading(false);
         }
@@ -116,6 +137,7 @@ const ChangePassword: React.FC = () => {
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-800 dark:text-white">
+          <ToastContainer/>
             <Card className="w-full max-w-md shadow-lg">
                 <CardContent>
                     <Typography variant="h5" className="mb-4 text-center font-bold">

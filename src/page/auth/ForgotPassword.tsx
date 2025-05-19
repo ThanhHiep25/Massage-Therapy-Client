@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Alert } from '@mui/material';
-import { resetPassword, sendResetPassword } from '../../service/apiService';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion'
+import { resetPassword, sendResetPassword } from '../../service/apiAuth';
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
+    const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [step, setStep] = useState(1);
-    const [attemptsLeft, setAttemptsLeft] = useState(3);
     const [timer, setTimer] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -24,6 +24,7 @@ const ForgotPassword: React.FC = () => {
     };
 
     const handleSendOtp = async () => {
+
         if (!email) {
             setError("Vui lòng nhập email.");
             return;
@@ -51,10 +52,28 @@ const ForgotPassword: React.FC = () => {
         }
     };
 
+    const validatePassword = (password: string) => {
+        if (!password) {
+            return "Vui lòng nhập mật khẩu mới.";
+        }
+        // Ví dụ: Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và chữ số
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường và chữ số và kí tự đặc biệt.";
+        }
+        return null; // Không có lỗi
+    };
+
+      const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewPassword(e.target.value);
+        setNewPasswordError(validatePassword(e.target.value));
+    };
+
 
     const handleResetPassword = async () => {
-        if (attemptsLeft === 0) {
-            setError("Bạn đã nhập sai OTP quá nhiều lần. Vui lòng yêu cầu OTP mới.");
+        
+        if (newPasswordError) {
+            setError(newPasswordError);
             return;
         }
         setError(null);
@@ -123,12 +142,10 @@ const ForgotPassword: React.FC = () => {
         return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-
-
     return (
         <div className="relative w-full min-h-screen px-4 sm:px-8 lg:px-16 flex flex-col sm:flex-row items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black">
             {/* Nút quay lại */}
-            <div className="absolute top-4 left-4" >
+            <div className="absolute top-10 left-5" >
                 <a className="text-white hover:underline cursor-pointer" onClick={() => navigation(-1)}>
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -147,7 +164,7 @@ const ForgotPassword: React.FC = () => {
                 transition={{ duration: 0.3 }}
                 className="w-full max-w-md bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-xl text-white border border-white/20">
                 <div>
-                    <h2 className="text-2xl font-bold text-center mb-4">
+                    <h2 className="sm:text-2xl text-lg font-medium text-center mb-4">
                         {step === 1 ? 'Quên mật khẩu' : 'Đặt lại mật khẩu'}
                     </h2>
 
@@ -162,12 +179,12 @@ const ForgotPassword: React.FC = () => {
                                 placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mb-4 w-full px-4 py-2 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                className="mb-4 w-full text-sm px-4 py-2 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                 disabled={loading}
                             />
                             <button
                                 type='submit'
-                                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
+                                className="w-full bg-blue-500 text-sm hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
                                 onClick={handleSendOtp}
                                 disabled={!email || loading}
                             >
@@ -194,14 +211,15 @@ const ForgotPassword: React.FC = () => {
                                 </p>
 
                             </div>
-                            <div className="relative w-full">
+                            <div className="mb-3 text-sm">
+                                <div className="relative w-full">
                                 <input
                                     placeholder="Mật khẩu mới"
                                     type={showPassword ? "text" : "password"}
                                     value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    onChange={handleNewPasswordChange}
                                     disabled={loading}
-                                    className="mb-4 w-full px-4 py-4 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none pr-10"
+                                    className="w-full px-4 py-4 text-black border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none pr-10"
                                 />
                                 <button
                                     type="button"
@@ -211,13 +229,13 @@ const ForgotPassword: React.FC = () => {
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
-
-
-
+                             {newPasswordError && <p className="text-red-500 text-sm mb-2 mt-1">{newPasswordError}</p>}
+                            </div>
+                            
                             <div className=" flex flex-col items-center">
                                 <button
                                     type='submit'
-                                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
+                                    className="w-full bg-blue-500 text-sm hover:bg-blue-600 text-white font-semibold py-2 rounded-md"
                                     onClick={handleResetPassword}
                                     disabled={!otp || !newPassword || timer === 0 || loading}
                                 >

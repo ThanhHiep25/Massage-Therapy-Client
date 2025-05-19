@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../../hook/AuthContext";
-import { Edit, FileCopy, Share, Save, Cancel } from "@mui/icons-material";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../hooks/AuthContext";
+import { FileCopy, Share, Save, Cancel } from "@mui/icons-material";
 import { Backdrop, Box, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField, Button, Snackbar } from "@mui/material";
-import { Mail, MapPinHouse, Phone } from "lucide-react";
+import { ChevronLeft, Mail, MapPinHouse, Phone } from "lucide-react";
+import { motion } from 'framer-motion'
+import { useNavigate } from "react-router-dom";
 
 const actions = [
   { icon: <FileCopy />, name: 'Copy' },
-  { icon: <Edit />, name: 'Edit' },
   { icon: <Share />, name: 'Share' },
 ];
 
@@ -16,12 +17,11 @@ const ProfileDetail: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [userData, setUserData] = useState(user);
   const [snackbar, setSnackbar] = useState({ open: false, message: '' });
-
-  const params = new URLSearchParams(window.location.search);
+  const navigate = useNavigate();
+  const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleEdit = () => setEditMode(true);
   const handleCancel = () => {
     setEditMode(false);
     setUserData(user);
@@ -73,9 +73,7 @@ const ProfileDetail: React.FC = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
-  };
+
 
   useEffect(() => {
     const encodedData = params.get('data');
@@ -104,61 +102,61 @@ const ProfileDetail: React.FC = () => {
   }, [user, login]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-9 h-screen w-screen" style={{
-      borderRadius: '10px',
-      boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-    }}>
+    <div className="relative flex flex-col items-center justify-center h-screen">
+      <p className="absolute top-10 left-5 cursor-pointer w-10 h-10 rounded-full dark:bg-slate-600 bg-slate-200 hover:bg-slate-300/80 flex items-center justify-center" onClick={() => navigate(-1)} title="Quay lập">
+        <ChevronLeft />
+      </p>
+      <div className="sm:w-[50vw] w-[500px] max-w-full relative bg-white dark:bg-slate-600 backdrop-blur-lg shadow-lg p-6 rounded-2xl" >
+        <h2 className="text-2xl font-bold">Thông tin cá nhân</h2>
 
-      <div className="sm:w-[50vw] w-[500px] max-w-full h-screen relative" >
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: 'bold',
-          marginBottom: '20px',
-          paddingBottom: '10px',
-          borderBottom: '1px solid #e5e7eb',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          lineHeight: '1.2',
-          width: '100%',
-          maxWidth: '400px'
-        }}>Thông tin cá nhân</h2>
-
-        <div className="sm:flex sm:justify-around mt-20">
-          <div className="sm:w-[50%] flex flex-col items-center mt-10">
+        <div className="mt-2">
+          <div className="sm:w-[100%] flex flex-col items-center sm:mt-8 mt-4">
             <img src={userData?.imageUrl || params?.get('imageUrl')} alt="Avatar"
-              className="sm:h-52 sm:w-52 w-[100px] h-[100px] rounded-full object-cover" />
-            <p className="px-6 py-1 bg-amber-300 w-[100px] flex items-center justify-center rounded-full shadow-lg">{userData?.description} {params?.get('description')}</p>
+              className="sm:h-40 sm:w-40 w-[80px] h-[80px] rounded-full object-cover border-yellow-200 outline-dotted outline-gray-400" />
           </div>
 
           {editMode ? (
-            <div className="bg-white p-2 sm:ml-14 mt-2 rounded-2xl" >
-              <TextField label="Tên" name="name" value={userData?.name} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-              <TextField label="Email" name="email" value={userData?.email} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-              <TextField label="Số điện thoại" name="phone" value={userData?.phone} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-              <TextField label="Địa chỉ" name="address" value={userData?.address} onChange={handleChange} fullWidth margin="normal" variant="outlined" />
-              <TextField label="Loại khách hàng " name="description" value={userData?.description} onChange={handleChange} fullWidth margin="normal" variant="outlined" multiline rows={3} />
+            <div className="bg-white/60 backdrop-blur-lg  p-4 mt-2 rounded-2xl" >
+              <TextField label="Tên" name="name" value={userData?.name} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Email" name="email" value={userData?.email} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Số điện thoại" name="phone" value={userData?.phone} fullWidth margin="normal" variant="outlined" />
+              <TextField label="Địa chỉ" name="address" value={userData?.address} fullWidth margin="normal" variant="outlined" />
               <div className="flex justify-between mt-4">
                 <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSave}>Lưu</Button>
                 <Button variant="text" color="error" startIcon={<Cancel />} onClick={handleCancel}>Hủy</Button>
               </div>
             </div>
           ) : (
-            <div className="sm:flex sm:flex-col sm:ml-14 mt-10 w-full sm:items-center sm:gap-y-9 gap-y-3 bg-slate-200 rounded-2xl p-6 shadow-md">
-              <p className="mt-3 sm:text-3xl text-lg">{userData?.name} {params?.get('name')}</p>
+            <div className="sm:flex sm:flex-col  sm:mt-10 mt-4 w-full  sm:gap-y-2 gap-y-3 bg-white/20 outline outline-gray-200 shadow-sm rounded-2xl p-6">
+              <p className="mt-3 sm:text-[24px] text-lg">{userData?.name} {params?.get('name')}</p>
+              <hr className="mt-1" />
               <p className="mt-3 flex items-center gap-6 sm:text-xl tex-lg"><Mail /> {userData?.email} {params?.get('email')}</p>
+              <hr className="mt-1" />
               <p className="mt-3 flex items-center gap-6 sm:text-xl text-lg"><Phone /> {userData?.phone} {params?.get('phone')}</p>
+              <hr className="mt-1" />
               <p className="mt-3 flex items-center gap-6 sm:text-xl text-lg"><MapPinHouse /> {userData?.address} {params?.get('address')}</p>
             </div>
           )}
+
+          <div className="mt-6 p-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              className="flex items-center gap-3 mt-6 bg-gray-300/50 px-10 py-3 rounded-lg hover:bg-blue-300"
+              onClick={() => navigate('/policy')}
+            >
+              Lưu ý và điều khoản chính sách
+            </motion.button>
+          </div>
+
         </div>
 
 
 
-        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", height: 120, width: "100%" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-end", height: 100, width: "100%" }}>
           <Backdrop open={open} />
           <SpeedDial
             ariaLabel="SpeedDial tooltip example"
-            sx={{ position: 'absolute', bottom: 16, right: 16 }}
+            sx={{ position: 'absolute', bottom: 10, right: 16 }}
             icon={<SpeedDialIcon />}
             onClose={handleClose}
             onOpen={handleOpen}
@@ -171,7 +169,6 @@ const ProfileDetail: React.FC = () => {
                 tooltipTitle={action.name}
                 tooltipOpen
                 onClick={() => {
-                  if (action.name === 'Edit') handleEdit();
                   if (action.name === 'Copy') handleCopy();
                   if (action.name === 'Share') handleShare();
                   handleClose();

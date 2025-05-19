@@ -10,8 +10,12 @@ const GoogleLoginModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
       const result = await signInWithPopup(auth, provider);
       console.log("User Info:", result.user);
       onClose(); // Đóng modal sau khi login thành công
-    } catch (error: any) {
-      setErrorMessage(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("An unknown error occurred.");
+      }
     }
   };
 

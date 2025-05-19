@@ -1,4 +1,4 @@
-import { AuthProvider } from "./hook/AuthContext";
+import { AuthProvider } from "./hooks/AuthContext";
 import NavigatorBrowser from "./navigate/navigator";
 
 

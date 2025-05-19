@@ -24,7 +24,7 @@ const HieuSuatNV: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col p-4 gap-6 pb-12">
+    <div className="flex flex-col p-1 sm:p-4 gap-6 pb-12">
       {/* Row 1: Pie Chart */}
       <Card>
         <CardContent>

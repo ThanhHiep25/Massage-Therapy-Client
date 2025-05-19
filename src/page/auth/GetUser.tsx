@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { getUserById, logout } from '../../service/apiService';
+import { getUserById } from '../../service/apiService';
+import axios from 'axios';
+import { logout } from '../../service/apiAuth';
 
 const GetUser: React.FC = () => {
   const [userId, setUserId] = useState<number>(0);
@@ -16,8 +18,11 @@ const GetUser: React.FC = () => {
       } else {
         setMessage('Error: Failed to fetch user data.');
       }
-    } catch (error: any) {
-      setMessage(`Error: ${error.response?.data?.error || error.message}`);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setMessage(`Error: ${error.response?.data?.error || error.message}`);
+      }
+
     }
 
     console.log(document.cookie); // In toàn bộ cookie
@@ -30,8 +35,12 @@ const GetUser: React.FC = () => {
         setUserInfo(null); // Xóa thông tin người dùng
         setMessage('You have logged out successfully.');
       }
-    } catch (error: any) {
-      setMessage(`Error: ${error.response?.data?.error || error.message}`);
+    } catch (error: unknown) {
+
+      if (axios.isAxiosError(error)) {
+        setMessage(`Error: ${error.response?.data?.error || error.message}`);
+      }
+
     }
   };
 

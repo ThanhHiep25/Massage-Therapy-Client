@@ -3,7 +3,7 @@
 /* Version : 1.0.00 */
 /* Description : This is the css file for the google pay button and the payment container. */
 
-.payment-container {
+.payment-container-gg {
   margin: 20px;
   padding: 20px;
   height: auto;
@@ -15,11 +15,11 @@
   color: rgb(78, 76, 76);
 }
 
-.payment-container h2 {
+.payment-container-gg h2 {
   text-align: center;
 }
 
-.google-pay-button {
+.google-pay-button-gg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -36,13 +36,13 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.google-pay-button:hover {
+.google-pay-button-gg:hover {
   background: linear-gradient(135deg, #34a853, #4285f4);
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-.google-pay-button:active {
+.google-pay-button-gg:active {
   transform: translateY(0);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
@@ -53,7 +53,7 @@
   box-shadow: none;
 }
 
-.transaction-details {
+.transaction-details-gg {
   margin-top: 20px;
   padding: 10px;
   border: 1px solid #ddd;
@@ -61,11 +61,11 @@
   background-color: #fff;
 }
 
-.details span {
+.details-gg span {
   margin: 0 15px;
 }
 
-.vertical-table {
+.vertical-table-gg {
   margin: 20px auto;
   max-width: 400px;
 
@@ -74,29 +74,29 @@
   background-color: #f9f9f9;
 }
 
-.vertical-table table {
+.vertical-table-gg table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.vertical-table th,
-.vertical-table td {
+.vertical-table-gg th,
+.vertical-table-gg td {
   padding: 12px 15px;
   text-align: left;
   border-radius: 10px;
 }
 
-.vertical-table th {
+.vertical-table-gg th {
   background-color: #f0f0f0;
   font-weight: bold;
   width: 40%;
 }
 
-.vertical-table tr:last-child td {
+.vertical-table-gg tr:last-child td {
   border-bottom: none;
 }
 
-.vertical-table td {
+.vertical-table-gg td {
   background-color: #fff;
 }
 
@@ -117,7 +117,7 @@ p {
   color: #333;
 }
 
-.loading-text {
+.loading-text-gg {
   display: inline-block;
   position: relative;
   color: #a1a1a1;
