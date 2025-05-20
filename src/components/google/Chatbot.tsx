@@ -1,4 +1,4 @@
-import React ,{ useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { FaUser, FaRobot, FaPaperPlane } from "react-icons/fa";
 import { marked } from "marked";
 import { motion } from 'framer-motion'
@@ -63,6 +63,7 @@ const Chatbot: React.FC = () => {
     }, []);
 
     useEffect(() => {
+
         fetchSpaServices();
     }, [fetchSpaServices]);
 
@@ -110,8 +111,9 @@ const Chatbot: React.FC = () => {
                 </div>
 
             ));
-
-            setMessages(prev => [...prev, { role: "assistant", content: "", jsxContent: serviceDetailsElements }]);
+            setTimeout(() => {
+                setMessages(prev => [...prev, { role: "assistant", content: "", jsxContent: serviceDetailsElements }]);
+            }, 2000);
             setLoading(false);
             return;
         }
@@ -156,8 +158,9 @@ const Chatbot: React.FC = () => {
                 </div>
 
             ));
-
-            setMessages(prev => [...prev, { role: "assistant", content: "", jsxContent: serviceDetailsElements }]);
+            setTimeout(() => {
+                setMessages(prev => [...prev, { role: "assistant", content: "", jsxContent: serviceDetailsElements }]);
+            }, 2000);
             setLoading(false);
             return;
         }
@@ -230,7 +233,7 @@ const Chatbot: React.FC = () => {
         const value = e.target.value;
         setInput(value);
         adjustTextareaHeight();
-    
+
         if (value.trim() !== "") {
             const filteredSuggestions = spaServices.filter(service =>
                 service.name.toLowerCase().includes(value.toLowerCase())
@@ -250,6 +253,7 @@ const Chatbot: React.FC = () => {
         setShowSuggestions(false);
         textareaRef.current?.focus(); // Focus lại vào textarea sau khi chọn gợi ý
     };
+
 
     return (
         <div className="relative w-full min-h-screen px-4 sm:px-8 lg:px-16 flex flex-col sm:flex-row items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black">

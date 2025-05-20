@@ -14,10 +14,11 @@ interface Props {
     onClose: () => void;
     appointment: AppointmentResponse | null;
     onUpdateSuccess?: () => void;
+    handleUpdateAppointmentPaidStatus: (appointmentId: number, appointmentName: string) => void;
 }
 
 
-const PaymentModal: React.FC<Props> = ({ open, onClose, appointment, onUpdateSuccess }) => {
+const PaymentModal: React.FC<Props> = ({ open, onClose, appointment, onUpdateSuccess, handleUpdateAppointmentPaidStatus }) => {
     const [discountedPrice, setDiscountedPrice] = useState<number | null>(null);
     const [discountError, setDiscountError] = useState("");
     const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
@@ -217,6 +218,17 @@ const PaymentModal: React.FC<Props> = ({ open, onClose, appointment, onUpdateSuc
                             Tổng tiền sau giảm giá: {discountedPrice.toLocaleString("vi-VN")}đ
                         </p>
                     )}
+                </div>
+
+                
+                <div className="sm:text-[16px] text-[14px]
+                ">
+                    <label >Cập nhật trạng thái thanh toán <i className='text-red-400'>(Chỉ áp dụng cho thanh toán tiền mặt tại cửa hàng)</i></label>
+                    <button
+                        onClick={() => handleUpdateAppointmentPaidStatus(appointment.id, appointment.id.toString())}
+                        className='bg-gray-300 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2'>
+                        Đã thanh toán
+                    </button>
                 </div>
 
                 <div className="sm:text-[16px] text-[14px]">

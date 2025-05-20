@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { addEmployee, addPosition, getPositions } from "../../service/apiStaff";
+import { addEmployee, addPosition,  getPositions } from "../../service/apiStaff";
 import { CloudUpload } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
@@ -66,8 +66,6 @@ const AddStaffForm: React.FC = () => {
             setImagePreview(previewUrl);
             setImageFile(file);
             setMessage("Ảnh đã được chọn. Ảnh sẽ được tải lên khi bạn nhấn 'Thêm mới'.");
-            // Không cần toast ở đây, chỉ cần message là đủ
-            // toast.success("Ảnh đã được chọn. Ảnh sẽ được tải lên khi bạn nhấn 'Thêm mới'.");
         }
     };
 
@@ -105,7 +103,7 @@ const AddStaffForm: React.FC = () => {
                 return "";
             case 'email':
                 if (!value) return "Vui lòng nhập email.";
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email không hợp lệ.";
+                if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(value)) return "Email không hợp lệ.";
                 return "";
             case 'address':
                 if (!value) return "Vui lòng nhập địa chỉ.";
@@ -157,7 +155,7 @@ const AddStaffForm: React.FC = () => {
             const errorMessage = validateField(name, value);
             setErrors((prevErrors) => ({
                 ...prevErrors,
-                [name]: errorMessage, // Cập nhật lỗi cho trường này
+                [name]: errorMessage, 
             }));
         }
     };
@@ -178,8 +176,6 @@ const AddStaffForm: React.FC = () => {
             }
         });
 
-        // Có thể thêm validation cho ảnh ở đây nếu cần
-        // if (!imageFile && !formData.imageUrl) { ... }
 
         setErrors(newErrors);
         return isValid;
@@ -240,8 +236,8 @@ const AddStaffForm: React.FC = () => {
 
     // Create Position
     const handleCreatePosition = async () => {
-        if (positionName.trim() === "" ) {
-            toast.error("Vui lòng nhập đầy đủ tên và mô tả chức vụ!");
+        if (positionName === "" ) {
+            toast.error("Vui lòng nhập đầy đủ tên chức vụ!");
             return;
         }
         try {
@@ -252,7 +248,7 @@ const AddStaffForm: React.FC = () => {
             setPositionDescription("");
             fetchPositions(); // Tải lại danh sách chức vụ
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response?.data?.code === 1006) {
+            if (axios.isAxiosError(error) && error.response?.data?.code === 1010) {
                 toast.error("Chức vụ này đã tồn tại!");
             } else {
                 toast.error("Có lỗi xảy ra khi thêm chức vụ.");
@@ -260,6 +256,8 @@ const AddStaffForm: React.FC = () => {
             }
         }
     }
+
+   
 
     return (
         <motion.div
@@ -285,7 +283,9 @@ const AddStaffForm: React.FC = () => {
                             required />
                     </div>
                     <div>
-                        <label htmlFor="positionDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mô tả:</label>
+                        <label htmlFor="positionDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mô tả:
+                        <i>(Có thể có hoặc không)</i>
+                        </label>
                         <input
                             type="text"
                             name="positionDescription"
@@ -390,7 +390,8 @@ const AddStaffForm: React.FC = () => {
                                 <option value="">-- Chọn chức vụ --</option>
                                 {positions.length > 0 ? (
                                     positions.map((position) => (
-                                        <option key={position.positionId} value={position.positionId}>{position.positionName}</option>
+                                        <option key={position.positionId} value={position.positionId}>{position.positionName}
+                                        </option>
                                     ))
                                 ) : (
                                     <option disabled>Đang tải hoặc không có chức vụ</option>

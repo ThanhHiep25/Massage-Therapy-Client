@@ -153,6 +153,20 @@ export const updateStatusComplete = async (id: number) => {
   }
 };
 
+// thay đổi trạng thái paid
+export const updateStatusPaid = async (id: number) => {
+  try {
+    const response = await api.put(`/appointments/${id}/paid`);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw error;
+    } else {
+      throw new Error("Khong the ket noi den server");
+    }
+  }
+};
+
 // huy lich hen
 export const updateStatusCancel = async (id: number) => {
   try {
@@ -196,3 +210,4 @@ export const getTotalAppointments = async () => {
     }
   }
 };
+

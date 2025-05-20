@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { deleteAppointment, exportAppointmentToExcel, getAppointmentAll } from "../../service/apiAppoinment";
+import { deleteAppointment, exportAppointmentToExcel, getAppointmentAll, updateStatusPaid } from "../../service/apiAppoinment";
 import { AppointmentResponse } from '../../interface/Appointment_interface';
 import { motion } from 'framer-motion'
 import AppointmentDetailModal from "./AppointmentDetailModal";
@@ -58,24 +58,6 @@ const AppoinmentList: React.FC = () => {
     const intervalId = setInterval(fetchAppointment, AUTO_REFRESH_INTERVAL);
     return () => clearInterval(intervalId);
   }, [])
-
-
-  // const fetchAppointment = async () => {
-  //   try {
-  //     const response = await getAppointmentAll();
-  //     // Sắp xếp lịch hẹn theo thời gian tạo (giả sử API trả về trường createdAt)
-  //     const sortedAppointments = response.sort((a: { createdAt: string }, b: { createdAt: string }) => {
-  //       // Chuyển đổi thời gian tạo sang đối tượng Date để so sánh
-  //       const dateA: Date = new Date(a.createdAt);
-  //       const dateB: Date = new Date(b.createdAt);
-  //       // Sắp xếp giảm dần (mới nhất ở đầu)
-  //       return dateB.getTime() - dateA.getTime();
-  //     });
-  //     setAppointment(sortedAppointments);
-  //   } catch (error) {
-  //     console.error("Không thể lấy danh sách lịch hẹn:", error);
-  //   }
-  // };
 
   const fetchAppointment = async () => {
     try {
@@ -159,6 +141,19 @@ const AppoinmentList: React.FC = () => {
     try {
       await deleteAppointment(id)
       toast.success(`Xóa dịch vụ thành công`)
+      fetchAppointment();
+    } catch (error) {
+      console.error(`Lỗi kích hoạt dịch vụ`, error);
+      toast.error("Xác nhận thất bại")
+    }
+  }
+
+  const handleUpdateAppointmentPaidStatus = async (id: number, name: string) => {
+    if (!window.confirm('Bạn có chắc muốn xác nhận thanh toán lịch hẹn này ?')) return;
+
+    try {
+      await updateStatusPaid(id)
+      toast.success(`Xác nhận thanh toán lịch hẹn ${name} thành công`)
       fetchAppointment();
     } catch (error) {
       console.error(`Lỗi kích hoạt dịch vụ`, error);
@@ -271,6 +266,7 @@ const AppoinmentList: React.FC = () => {
         onClose={handleClosePaymentModal}
         appointment={selectedAppointment}
         onUpdateSuccess={fetchAppointment}
+        handleUpdateAppointmentPaidStatus={handleUpdateAppointmentPaidStatus}
       />
 
     </motion.div>

@@ -28,6 +28,11 @@ const Department: React.FC<Props> = ({ onReload }) => {
 
     const handleCreateDepartment = async () => {
 
+        if (department === '') {
+            toast.warning("Vui lòng nhập tên phòng!");
+            return;
+        }
+        
         try {
             const newDepartment: DepartmentIS = {
                 departmentName: department,

@@ -134,6 +134,29 @@ const AssignmentStaff: React.FC = () => {
 
     // Tạo phân công nhân viên
     const handleCreate = async () => {
+        if (formData.staffId === 0) {
+            toast.warning("Vui lòng chọn nhân viên!");
+            return;
+        }
+        if (formData.appointmentId === 0) {
+            toast.warning("Vui lòng chọn dịch vụ!");
+            return;
+        }
+
+        if (formData.departmentId === 0) {
+            toast.warning("Vui lòng chọn phòng")
+            return;
+        }
+
+        const assignedDate = new Date(formData.assignedDate);
+        const today = new Date();
+        assignedDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        if (assignedDate < today) {
+            toast.warning("Ngày phân công phải là từ thời điểm hiện tại trở đi!");
+            return;
+        }
+
         try {
 
             const newAssignment = await createAssignmentStaff(formData);
@@ -152,7 +175,7 @@ const AssignmentStaff: React.FC = () => {
         catch (error) {
 
             if ((error as { response?: { data?: { code?: number } } })?.response?.data?.code === 2001) {
-                toast.warning("Nhân viên này đã được phân công!");
+                toast.warning("Nhân viên này đang được phân công cho dịch vụ khác!");
                 return;
             }
             if ((error as { response?: { data?: { code?: number } } })?.response?.data?.code === 2000) {
@@ -160,7 +183,11 @@ const AssignmentStaff: React.FC = () => {
                 return;
             }
             if ((error as { response?: { data?: { code?: number } } })?.response?.data?.code === 404) {
-                toast.error("Bạn chưa chọn phòng!");
+                toast.warn("Bạn chưa chọn phòng!");
+                return;
+            }
+            if ((error as { response?: { data?: { code?: number } } })?.response?.data?.code === 1006) {
+                toast.warning("Lịch hẹn này đã có phòng trước đó!");
                 return;
             }
 
@@ -251,7 +278,7 @@ const AssignmentStaff: React.FC = () => {
             <ToastContainer />
             <p className="sm:text-2xl text-lg font-bold mb-6">Phân công nhân viên 🍃</p>
 
-            <Department onReload={fetchDepartment}/>
+            <Department onReload={fetchDepartment} />
 
             <div className="p-5 bg-white rounded-xl dark:text-black">
                 <div className="flex sm:flex-row flex-col gap-4 mb-4">
